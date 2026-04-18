@@ -1,4 +1,4 @@
-package br.com.rodrigoamora.bibliotecacomredis.controller;
+package br.com.rodrigoamora.bibliotecacomredis.controller.api;
 
 import br.com.rodrigoamora.bibliotecacomredis.dto.LivroDto;
 import io.swagger.v3.oas.annotations.Operation;
