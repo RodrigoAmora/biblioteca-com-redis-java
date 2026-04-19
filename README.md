@@ -37,8 +37,7 @@ http://localhost:8082/redoc
 
 Banco de dados
 --------------
-O projeto usa o MySQL como banco da dados para o ambiente local e de produção, o Redis para cache e o H2 para os testes.
-<br>
+O projeto usa o MySQL como banco da dados, o Redis para cache e o H2 para os testes.
 
 Configurações projeto:
 ---------------------
