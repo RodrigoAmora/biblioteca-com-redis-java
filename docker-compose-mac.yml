@@ -8,7 +8,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - fiap-network
+      - livros-network
 
   mysql-service:
     image: mysql/mysql-server:8.0.32-1.2.11-server
@@ -18,11 +18,11 @@ services:
       - mysql-data:/var/lib/mysql
       - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
-      - fiap-network
+      - livros-network
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DATABASE=fiap_videos
+      - MYSQL_DATABASE=livros
       - MYSQL_ROOT_HOST=%
     ports:
       - "3306:3306"
@@ -33,11 +33,11 @@ services:
       retries: 5
       start_period: 60s
 
-  fiap-videos:
+  livros:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: 'fiap-videos'
+    container_name: 'livros'
     platform: linux/amd64 #Para MacBooks com o processador M+(M1, M2, M3,etc...)
     environment:
       - SPRING_PROFILES_ACTIVE=prod
@@ -45,88 +45,18 @@ services:
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
     ports:
-      - "8082:8082"
+      - "8080:8080"
     networks:
-      - fiap-network
+      - livros-network
     depends_on:
       - mysql-service
-      - redis
-      - rabbitmq
-    volumes:
-      - uploads:/uploads
-      - outputs:/outputs
     restart: always
 
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: rabbitmq
-    platform: linux/amd64 #Para MacBooks com o processador M+(M1, M2, M3,etc...)
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    networks:
-      - fiap-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    hostname: prometheus
-    restart: unless-stopped
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    ports:
-      - 9090:9090
-    networks:
-      - fiap-network
-    depends_on:
-      - fiap-videos
-    links:
-      - fiap-videos
-    user: root
-
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    volumes:
-      - grafana-data:/var/lib/grafana
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    networks:
-      - fiap-network
-    depends_on:
-      - prometheus
-    links:
-      - prometheus
-
 networks:
-  fiap-network:
+  livros-network:
     driver: bridge
 
 volumes:
-  uploads:
-  outputs:
-  prometheus-data:
-  grafana-data:
   redis-data:
   mysql-data:
     driver: local
